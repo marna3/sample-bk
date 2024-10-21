@@ -33,28 +33,19 @@ commands:
             echo ${SERVICE_GSA_KEY} | gcloud auth activate-service-account --key-file=-
             gcloud auth list
             gcloud config list
-  # FIXME: executorのコンテナイメージでmvnコマンドが使えれば、このコマンドは不要
   set_image_tag:
     steps:
+      # FIXME: executorのコンテナイメージでmvnコマンドが使えれば、このコマンドは不要
+      - run:
+          name: Install Maven
+          command: |
+            apt install -y maven
+            mvn -version
       - run:
           name: Set Variables
           command: |
-            IMAGE_TAG=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-            echo "export IMAGE_TAG=${IMAGE_TAG}" >> /tmp/image_tag_var.sh
-      - persist_to_workspace:
-          root: /tmp
-          paths:
-            - /tmp/image_tag_var.sh
-  # FIXME: executorのコンテナイメージでmvnコマンドが使えれば、このコマンドは不要
-  load_image_tag:
-    steps:
-      - attach_workspace:
-          at: /tmp
-      - run:
-          name: Load Variables
-          command: |
-            source /tmp/image_tag_var.sh
-            echo "IMAGE_TAG=${IMAGE_TAG}"
+            # IMAGE_TAG=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            echo "export IMAGE_TAG=${IMAGE_TAG}" >> $BASH_ENV
   image_build:
     steps:
       - run:

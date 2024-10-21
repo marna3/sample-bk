@@ -33,24 +33,23 @@ commands:
             echo ${SERVICE_GSA_KEY} | gcloud auth activate-service-account --key-file=-
             gcloud auth list
             gcloud config list
-  set_image_tag:
+  image_tag_setting:
     steps:
-      # FIXME: executorのコンテナイメージでmvnコマンドが使えれば、このコマンドは不要
       - run:
-          name: Install Maven
+          name: Install xmllint Command
           command: |
-            apt install -y maven
-            mvn -version
+            apt install -y libxml2-utils
       - run:
-          name: Set Variables
+          name: Set Image Tag
           command: |
-            IMAGE_TAG=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            IMAGE_TAG=$(xmllint --xpath "//*[local-name()='project']/*[local-name()='version']/text()" ./pom.xml)
             echo "export IMAGE_TAG=${IMAGE_TAG}" >> $BASH_ENV
   image_build:
     steps:
       - run:
           name: Image Build
           command: |
+            echo "Image Tag: ${IMAGE_TAG}"
             docker build \
               --build-arg APP_ENV=${APP_ENV} \
               -t ${SERVICE_GCP_REGION}-docker.pkg.dev/${SERVICE_GCP_PROJECT}/${SERVICE_AR_REPO_NAME}/${SERVICE_NAME}:${IMAGE_TAG} .

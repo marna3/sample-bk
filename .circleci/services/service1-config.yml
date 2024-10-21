@@ -11,7 +11,7 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - gcloud_setting
-      - set_image_tag
+      - image_tag_setting
       - image_build
       - image_push
   service1-deploy:
@@ -21,7 +21,7 @@ jobs:
       - checkout:
           path: ~/project
       - gcloud_setting
-      - set_image_tag
+      - image_tag_setting
       - deploy
 
 workflows:

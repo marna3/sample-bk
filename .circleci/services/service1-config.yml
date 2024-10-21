@@ -40,9 +40,8 @@ workflows:
           filters: &sample_filters
             branches:
               only: main
-          # context: 
-          #   - xx
-          #   - xx
+          context: 
+            - CIRCLECI_COMMON
       - service1-build-and-push:
           requires:
             - set-image-tag 

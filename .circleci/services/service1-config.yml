@@ -1,0 +1,58 @@
+version: 2.1
+
+jobs:
+  # prebuild
+  set-image-tag:
+    executor: temurin
+    working_directory: ~/project/services/service1
+    steps:
+      - checkout:
+          path: ~/project
+      - set_image_tag
+  service1-build-and-push:
+    executor: google-cloud-cli
+    working_directory: ~/project/services/service1
+    steps:
+      - checkout:
+          path: ~/project
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - gcloud_setting
+      - load_image_tag
+      - image_build
+      - image_push
+  service1-deploy:
+    executor: google-cloud-cli
+    working_directory: ~/project/services/service1
+    steps:
+      - checkout:
+          path: ~/project
+      - gcloud_setting
+      - load_image_tag
+      - deploy
+
+workflows:
+  service1-flow:
+    jobs:
+      # prebuild
+
+      - set-image-tag: # FIXME: executorのコンテナイメージでmvnコマンドが使えれば、このジョブは不要
+          filters: &sample_filters
+            branches:
+              only: main
+          # context: 
+          #   - xx
+          #   - xx
+      - service1-build-and-push:
+          requires:
+            - set-image-tag 
+            # - xxx
+          context: 
+            - CIRCLECI_COMMON
+            - SERVICE1_DEV
+      - service1-deploy:
+          requires:
+            - service1-build-and-push
+          context:
+            - CIRCLECI_COMMON
+            - SERVICE1_DEV

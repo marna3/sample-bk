@@ -1,0 +1,98 @@
+version: 2.1
+
+# define the parameters from the setup config.
+parameters:
+  always-continue:
+    type: boolean
+    default: false
+  pipeline-service1:
+    type: boolean
+    default: false
+  pipeline-service2:
+    type: boolean
+    default: false
+
+executors:
+  temurin:
+    docker:
+      - image: ${CIRCLECI_EXECUTER_GCP_REGION}-docker.pkg.dev/${CIRCLECI_EXECUTER_GCP_PROJECT}/${CIRCLECI_EXECUTER_REPO_NAME}/maven:3.9.9-eclipse-temurin-21
+        auth:
+          username: _json_key
+          password: ${CIRCLECI_EXECUTER_GSA_KEY}
+  google-cloud-cli:
+    docker:
+      - image: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+
+commands:
+
+  gcloud_setting:
+    steps:
+      - run:
+          name: Authorize Google Cloud
+          command: |
+            echo ${SERVICE_GSA_KEY} | gcloud auth activate-service-account --key-file=-
+            gcloud auth list
+            gcloud config list
+  # FIXME: executorのコンテナイメージでmvnコマンドが使えれば、このコマンドは不要
+  set_image_tag:
+    steps:
+      - run:
+          name: Set Variables
+          command: |
+            IMAGE_TAG=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            echo "export IMAGE_TAG=${IMAGE_TAG}" >> /tmp/image_tag_var.sh
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - /tmp/image_tag_var.sh
+  # FIXME: executorのコンテナイメージでmvnコマンドが使えれば、このコマンドは不要
+  load_image_tag:
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name: Load Variables
+          command: |
+            source /tmp/image_tag_var.sh
+            echo "IMAGE_TAG=${IMAGE_TAG}"
+  image_build:
+    steps:
+      - run:
+          name: Image Build
+          command: |
+            docker build \
+              --build-arg APP_ENV=${APP_ENV} \
+              -t ${GCP_REGION}-docker.pkg.dev/${SERVICE_GCP_PROJECT}/${SERVICE_AR_REPO_NAME}/${SERVICE_NAME}:${IMAGE_TAG} .
+  image_push:
+    steps:
+      - run:
+          name: Configure Authentication
+          command: gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
+      - run:
+          name: Image Push
+          command: |
+            docker push ${GCP_REGION}-docker.pkg.dev/${SERVICE_GCP_PROJECT}/${SERVICE_AR_REPO_NAME}/${SERVICE_NAME}:${IMAGE_TAG}
+  deploy:
+    steps:
+      - run:
+          name: Set Configuration of Cloud Run Service
+          command: |
+            sed -i "s/<SERVICE_NAME>/${SERVICE_NAME}/g" ./deploy/service.yml
+            sed -i "s/<SERVICE_GCP_REGION>/${GCP_REGION}/g" ./deploy/service.yml
+            sed -i "s/<SERVICE_GCP_PROJECT>/${SERVICE_GCP_PROJECT}/g" ./deploy/service.yml
+            sed -i "s/<SERVICE_AR_REPO_NAME>/${SERVICE_AR_REPO_NAME}/g" ./deploy/service.yml
+            sed -i "s/<IMAGE_TAG>/${IMAGE_TAG}/g" ./deploy/service.yml
+            cat ./deploy/service.yaml
+      - run:
+          name: Deploy to Cloud Run
+          command: |
+            gcloud run services replace ./deploy/service.yml \
+              --project=${SERVICE_GCP_PROJECT}
+      - run:
+          name: Allow Access to Cloud Run Service
+          command: |
+            gcloud run services set-iam-policy ${SERVICE_NAME} ./deploy/policy.yml \
+              --region=${SERVICE_GCP_REGION} \
+              --quiet
+
+# jobs:

@@ -68,20 +68,23 @@ commands:
           name: Set Configuration of Cloud Run Service
           command: |
             sed -i "s/<SERVICE_NAME>/${SERVICE_NAME}/g" ./deploy/service.yml
-            sed -i "s/<SERVICE_GCP_REGION>/${GCP_REGION}/g" ./deploy/service.yml
+            sed -i "s/<SERVICE_GCP_REGION>/${SERVICE_GCP_REGION}/g" ./deploy/service.yml
             sed -i "s/<SERVICE_GCP_PROJECT>/${SERVICE_GCP_PROJECT}/g" ./deploy/service.yml
             sed -i "s/<SERVICE_AR_REPO_NAME>/${SERVICE_AR_REPO_NAME}/g" ./deploy/service.yml
             sed -i "s/<IMAGE_TAG>/${IMAGE_TAG}/g" ./deploy/service.yml
-            cat ./deploy/service.yaml
+            cat ./deploy/service.yml
       - run:
           name: Deploy to Cloud Run
           command: |
             gcloud run services replace ./deploy/service.yml \
-              --project=${SERVICE_GCP_PROJECT}
+              --project=${SERVICE_GCP_PROJECT} \
+              --region=${SERVICE_GCP_REGION} \
+              --quiet
       - run:
           name: Allow Access to Cloud Run Service
           command: |
             gcloud run services set-iam-policy ${SERVICE_NAME} ./deploy/policy.yml \
+              --project=${SERVICE_GCP_PROJECT} \
               --region=${SERVICE_GCP_REGION} \
               --quiet
 

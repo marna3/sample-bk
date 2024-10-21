@@ -1,0 +1,12 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: <SERVICE_NAME>
+  labels:
+    cloud.googleapis.com/location: <SERVICE_GCP_REGION>
+spec:
+  template:
+    spec:
+      containers:
+      - image: <SERVICE_GCP_REGION>-docker.pkg.dev/<SERVICE_GCP_PROJECT>/<SERVICE_AR_REPO_NAME>/<SERVICE_NAME>:<IMAGE_TAG>
+### その他、Cloud Runサービス設計に合わせてパラメータを追加

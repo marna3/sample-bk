@@ -30,8 +30,8 @@ workflows:
       # prebuild
 
       - service1-build-and-push:
-          requires:
-            # - xxx
+          # requires:
+          #  - xxx
           context: 
             - CIRCLECI_COMMON
             - SERVICE1_DEV

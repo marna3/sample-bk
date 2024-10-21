@@ -44,7 +44,7 @@ commands:
       - run:
           name: Set Variables
           command: |
-            # IMAGE_TAG=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            IMAGE_TAG=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
             echo "export IMAGE_TAG=${IMAGE_TAG}" >> $BASH_ENV
   image_build:
     steps:
@@ -53,16 +53,16 @@ commands:
           command: |
             docker build \
               --build-arg APP_ENV=${APP_ENV} \
-              -t ${GCP_REGION}-docker.pkg.dev/${SERVICE_GCP_PROJECT}/${SERVICE_AR_REPO_NAME}/${SERVICE_NAME}:${IMAGE_TAG} .
+              -t ${SERVICE_GCP_REGION}-docker.pkg.dev/${SERVICE_GCP_PROJECT}/${SERVICE_AR_REPO_NAME}/${SERVICE_NAME}:${IMAGE_TAG} .
   image_push:
     steps:
       - run:
           name: Configure Authentication
-          command: gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
+          command: gcloud auth configure-docker ${SERVICE_GCP_REGION}-docker.pkg.dev --quiet
       - run:
           name: Image Push
           command: |
-            docker push ${GCP_REGION}-docker.pkg.dev/${SERVICE_GCP_PROJECT}/${SERVICE_AR_REPO_NAME}/${SERVICE_NAME}:${IMAGE_TAG}
+            docker push ${SERVICE_GCP_REGION}-docker.pkg.dev/${SERVICE_GCP_PROJECT}/${SERVICE_AR_REPO_NAME}/${SERVICE_NAME}:${IMAGE_TAG}
   deploy:
     steps:
       - run:

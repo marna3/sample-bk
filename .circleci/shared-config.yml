@@ -47,10 +47,10 @@ commands:
     steps:
       - store_artifacts:
           path: ./target/syft-sbom.json
-          destination: ${SERVICE_NAME}-syft-sbom.json
+          destination: syft-sbom.json
       - store_artifacts:
           path: ./grype-scan-report.json
-          destination: ${SERVICE_NAME}-grype-scan-report.json
+          destination: grype-scan-report.json
 
   gcloud_setting:
     steps:

@@ -25,6 +25,33 @@ executors:
 
 commands:
 
+  scan_sbom:
+    steps:
+      - run:
+          name: Install Syft
+          command: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+      - run:
+          name: Make SBOM
+          command: |
+            syft scan . \
+              --source-name $(basename $(pwd)) \
+              --source-version $(echo $(git rev-parse --abbrev-ref HEAD))
+      - run:
+          name: Install Grype
+          command: curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+      - run:
+          name: Analyze SBOM
+          command: grype sbom:./target/syft-sbom.json
+
+  store_no_analyzed_reports:
+    steps:
+      - store_artifacts:
+          path: ./target/syft-sbom.json
+          destination: ${SERVICE_NAME}-syft-sbom.json
+      - store_artifacts:
+          path: ./grype-scan-report.json
+          destination: ${SERVICE_NAME}-grype-scan-report.json
+
   gcloud_setting:
     steps:
       - run:

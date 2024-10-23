@@ -1,7 +1,15 @@
 version: 2.1
 
 jobs:
-  # prebuild
+  service1-prebuild-static-analysis-without-sonarqube-scan:
+    executor: temurin
+    working_directory: ~/project/services/service1
+    steps:
+      - checkout:
+          path: ~/project
+      - scan_sbom
+      - store_no_analyzed_reports
+
   service1-build-and-push:
     executor: google-cloud-cli
     working_directory: ~/project/services/service1
@@ -25,13 +33,26 @@ jobs:
       - deploy
 
 workflows:
-  service1-flow:
-    jobs:
-      # prebuild
 
+
+  service1-release-to-develop-merge:
+    jobs:
+      - service1-prebuild-static-analysis-without-sonarqube-scan:
+          filters: &develop_filters
+            branches:
+              only: main
+          context:
+            - CIRCLECI_COMMON
+            - SERVICE1_DEV
+      # - service1-prebuild-static-analysis-and-test-with-sonarqube-scan:
+      #     filters: *develop_filters
+      #     context:
+      #       - CIRCLECI_COMMON
+      #       - SERVICE1_DEV
       - service1-build-and-push:
-          # requires:
-          #  - xxx
+          requires:
+            - service1-prebuild-static-analysis-without-sonarqube-scan
+            # - service1-prebuild-static-analysis-and-test-with-sonarqube-scan
           context: 
             - CIRCLECI_COMMON
             - SERVICE1_DEV

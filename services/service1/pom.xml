@@ -41,35 +41,39 @@
 
 	<build>
 		<plugins>
+			<!-- lombok -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
 			</plugin>
-
+			<!-- jacoco -->
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.8</version>
+				<version>0.8.12</version>
 				<executions>
 					<execution>
-						<id>prepare-agent</id>
+						<id>default-prepare-agent</id>
 						<goals>
 							<goal>prepare-agent</goal>
 						</goals>
 					</execution>
 					<execution>
-						<id>report</id>
+						<id>default-report</id>
 						<goals>
 							<goal>report</goal>
 						</goals>
-						<configuration>
-							<formats>
-								<format>XML</format>
-							</formats>
-						</configuration>
 					</execution>
 					<execution>
-						<id>check</id>
+						<id>default-check</id>
 						<goals>
 							<goal>check</goal>
 						</goals>
@@ -79,9 +83,9 @@
 									<element>BUNDLE</element>
 									<limits>
 										<limit>
-											<counter>LINE</counter> <!-- Lineカバレッジ-->
-												<value>COVEREDRATIO</value>
-											<minimum>0.5</minimum> <!-- 50%のカバレッジ -->
+											<counter>LINE</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.5</minimum>
 										</limit>
 									</limits>
 								</rule>
@@ -89,6 +93,46 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<!-- dependency-check -->
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>10.0.2</version>
+				<configuration>
+					<suppressionFile>./dependency-check-supressions.xml</suppressionFile>
+					<formats>
+						<format>HTML</format>
+						<format>JSON</format>
+					</formats>
+				</configuration>
+			</plugin>
+			<!-- SpotBugs Plugin -->
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<configuration>
+					<plugins>
+						<plugin>
+							<groupId>com.h3xstream.findsecbugs</groupId>
+							<artifactId>findsecbugs-plugin</artifactId>
+							<version>1.13.0</version>
+						</plugin>
+					</plugins>
+					<htmlOutput>true</htmlOutput>
+					<effort>Max</effort>
+					<threshold>medium</threshold>
+				</configuration>
+				<version>4.8.6.0</version>
+				<dependencies>
+					<!-- overwrite dependency on spotbugs if you want to specify the version of
+					spotbugs -->
+					<dependency>
+						<groupId>com.github.spotbugs</groupId>
+						<artifactId>spotbugs</artifactId>
+						<version>4.8.6</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 		</plugins>
 	</build>

@@ -9,6 +9,25 @@ jobs:
           path: ~/project
       - scan_sbom
       - store_no_analyzed_reports
+  service1-prebuild-static-analysis-and-test-with-sonarqube-scan:
+    executor: temurin
+    working_directory: ~/project/services/service1
+    steps:
+      - checkout:
+          path: ~/project
+      # - restore_cache:
+      #     keys:
+      #       - dependency-check-db-{{ .Branch }}-{{ .Revision }}
+      #       - dependency-check-db-
+      - unit_test
+      # - analyze_dependency
+      - check_coding_bug
+      # - save_cache:
+      #     paths:
+      #       - .m2/repository/org/owasp/dependency-check-data
+      #     key: dependency-check-db-{{ .Branch }}-{{ .Revision }}
+      - store_analyzed_reports
+      # - sonarqube_result_push
 
   service1-build-and-push:
     executor: google-cloud-cli
@@ -44,15 +63,15 @@ workflows:
           context:
             - CIRCLECI_COMMON
             - SERVICE1_DEV
-      # - service1-prebuild-static-analysis-and-test-with-sonarqube-scan:
-      #     filters: *develop_filters
-      #     context:
-      #       - CIRCLECI_COMMON
-      #       - SERVICE1_DEV
+      - service1-prebuild-static-analysis-and-test-with-sonarqube-scan:
+          filters: *develop_filters
+          context:
+            - CIRCLECI_COMMON
+            - SERVICE1_DEV
       - service1-build-and-push:
           requires:
             - service1-prebuild-static-analysis-without-sonarqube-scan
-            # - service1-prebuild-static-analysis-and-test-with-sonarqube-scan
+            - service1-prebuild-static-analysis-and-test-with-sonarqube-scan
           context: 
             - CIRCLECI_COMMON
             - SERVICE1_DEV

@@ -25,6 +25,12 @@ executors:
 
 commands:
 
+  unit_test:
+    steps:
+      - run:
+          name: Run tests
+          command: mvn -f ./pom.xml clean verify
+
   scan_sbom:
     steps:
       - run:
@@ -42,6 +48,19 @@ commands:
       - run:
           name: Analyze SBOM
           command: grype sbom:./target/syft-sbom.json
+  
+  analyze_dependency:
+    steps:
+      - run:
+          name: Analyze maven dependencies
+          command: |
+            mvn -f ./pom.xml dependency-check:check
+  
+  check_coding_bug:
+    steps:
+      - run:
+          name: Check coding bugs
+          command: mvn -f ./pom.xml spotbugs:check
 
   store_no_analyzed_reports:
     steps:
@@ -51,6 +70,24 @@ commands:
       - store_artifacts:
           path: ./grype-scan-report.json
           destination: grype-scan-report.json
+
+  store_analyzed_reports:
+    steps:
+      - store_artifacts:
+          path: ./target/site/jacoco
+          destination: jacoco
+      - store_artifacts:
+          path: ./target/dependency-check-report.json
+          destination: dependency-check-report.json
+      - store_artifacts:
+          path: ./target/dependency-check-report.html
+          destination: dependency-check-report.html
+      - store_artifacts:
+          path: ./target/spotbugsXml.xml
+          destination: spotbugsXml.xml
+      - store_artifacts:
+          path: ./target/spotbugs.html
+          destination: spotbugs.html
 
   gcloud_setting:
     steps:

@@ -39,6 +39,7 @@ jobs:
           docker_layer_caching: true
       - gcloud_setting
       - image_tag_setting
+      - existing_image_check
       - image_build
       - image_push
   service1-deploy:

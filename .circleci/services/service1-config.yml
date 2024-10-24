@@ -27,7 +27,7 @@ jobs:
       #       - .m2/repository/org/owasp/dependency-check-data
       #     key: dependency-check-db-{{ .Branch }}-{{ .Revision }}
       - store_analyzed_reports
-      # - sonarqube_result_push
+      - sonarqube_result_push
 
   service1-build-and-push:
     executor: google-cloud-cli
@@ -62,22 +62,23 @@ workflows:
               only: main
           context:
             - CIRCLECI_COMMON
-            - SERVICE1_DEV
+            - SERVICE1_BK_DEV
       - service1-prebuild-static-analysis-and-test-with-sonarqube-scan:
           filters: *develop_filters
           context:
             - CIRCLECI_COMMON
-            - SERVICE1_DEV
+            - SERVICE1_BK_DEV
+            - SERVICE1_BK_SONAR
       - service1-build-and-push:
           requires:
             - service1-prebuild-static-analysis-without-sonarqube-scan
             - service1-prebuild-static-analysis-and-test-with-sonarqube-scan
           context: 
             - CIRCLECI_COMMON
-            - SERVICE1_DEV
+            - SERVICE1_BK_DEV
       - service1-deploy:
           requires:
             - service1-build-and-push
           context:
             - CIRCLECI_COMMON
-            - SERVICE1_DEV
+            - SERVICE1_BK_DEV

@@ -89,6 +89,18 @@ commands:
           path: ./target/spotbugs.html
           destination: spotbugs.html
 
+  sonarqube_result_push:
+    steps:
+      - run:
+          name: Push result to SonarQube
+          command: |
+            mvn -f ./pom.xml sonar:sonar \
+              -Dsonar.organization=${SONAR_ORGANIZATION} \
+              -Dsonar.projectName=${SONAR_PROJECT_NAME}-<<pipeline.git.branch >> \
+              -Dsonar.projectKey=${SONAR_PROJECT_KEY}-<<pipeline.git.branch >> \
+              -Dsonar.host.url=${SONAR_HOST_URL} \
+              -Dsonar.login=${SONAR_TOKEN}
+
   gcloud_setting:
     steps:
       - run:

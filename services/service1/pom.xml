@@ -26,6 +26,21 @@
 		<tag/>
 		<url/>
 	</scm>
+
+	<properties>
+		<!-- <java.version>21</java.version> 一時的に17で対応-->
+		<!-- SonarScanner Properties -->
+		<sonar.organization>${env.SONAR_ORGANIZATION}</sonar.organization>
+		<sonar.projectName>${env.SONAR_PROJECT_NAME}</sonar.projectName>
+		<sonar.projectKey>${env.SONAR_PROJECT_KEY}</sonar.projectKey>
+		<sonar.host.url>${env.SONAR_HOST_URL}</sonar.host.url>
+		<sonar.login>${env.SONAR_TOKEN}</sonar.login>
+		<sonar.java.spotbugs.reportPaths>./target/spotbugsXml.xml</sonar.java.spotbugs.reportPaths>
+		<sonar.dependencyCheck.jsonReportPath>./target/dependency-check-report.json</sonar.dependencyCheck.jsonReportPath>
+		<sonar.dependencyCheck.htmlReportPath>./target/dependency-check-report.html</sonar.dependencyCheck.htmlReportPath>
+		<sonar.coverage.jacoco.xmlReportPaths>./target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+		<!-- <sonar.qualitygate.wait>true</sonar.qualitygate.wait> SonarCloud用にコメントアウト-->
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
